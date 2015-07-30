@@ -181,6 +181,12 @@ An optional initial value for the mask.
 
 An optional default selection - defaults to `{start: 0, end: 0}`, placing the cursor before the first character.
 
+### `hidePlaceholders` :  `boolean`
+
+Set to true if you do not want to see placeholders.
+
+Defaults to `false`.
+
 ## `InputMask` editing methods
 
 Editing methods will not allow the string being edited to contain invalid values according to the mask's pattern.
