@@ -327,6 +327,27 @@ test('Basic backspacing with hidePlaceholders', function(t) {
   t.deepEqual(mask.selection, {start: 0, end: 0}, 'Cursor ended up at the start of input')
 })
 
+test('Basic backspacing with insertMode', function(t) {
+  t.plan(7)
+
+  var mask = new InputMask({
+    pattern: '1111 1111 1111 1111',
+    value: '1234567812345678',
+    insertMode: true
+  })
+  t.false(mask.backspace(), 'Backspace with cursor at start of input is ignored')
+  mask.selection = {start: 9, end: 9}
+  t.true(mask.backspace(), 'Valid backspace accepted')
+  t.true(mask.backspace(), 'Valid backspace accepted')
+  t.true(mask.backspace(), 'Valid backspace accepted')
+  t.true(mask.backspace(), 'Valid backspace accepted')
+  // Backspacking doesn't automatically skip characters, as we can't tell when
+  // the user intends to start making input again, so it just steps over static
+  // parts of the mask when you backspace with the cursor ahead of them.
+  t.equal(mask.getValue(), '1234 1234 5678 ____', 'Final value')
+  t.deepEqual(mask.selection, {start: 5, end: 5}, 'Cursor remains in front of last deleted character')
+})
+
 test('Backspace with selected range', function(t) {
   t.plan(4)
 
@@ -353,6 +374,21 @@ test('Backspace with selected range and hidePlaceholders', function(t) {
   mask.selection = {start: 6, end: 8}
   t.true(mask.backspace(), 'Valid backspace accepted')
   t.equal(mask.getValue(), '1234 1412 3412 34', 'Other selected characters are blanked out')
+  t.deepEqual(mask.selection, {start: 6, end: 6}, 'Cursor placed before first character in selection')
+})
+
+test('Backspace with selected range and insertMode', function(t) {
+  t.plan(4)
+
+  var mask = new InputMask({
+    pattern: '1111 1111 1111 1111',
+    value: '1234567812345678',
+    insertMode: true
+  })
+  t.equal(mask.getValue(), '1234 5678 1234 5678', 'Initial mask value is formatted')
+  mask.selection = {start: 6, end: 8}
+  t.true(mask.backspace(), 'Valid backspace accepted')
+  t.equal(mask.getValue(), '1234 5812 3456 78__', 'Other selected characters are blanked out')
   t.deepEqual(mask.selection, {start: 6, end: 6}, 'Cursor placed before first character in selection')
 })
 
@@ -415,6 +451,31 @@ test('Pasting with hidePlaceholders', function(t) {
   t.equal(mask.getValue(), '', 'Empty after backspace')
 
   // Pasted input can contain static formatting characters
+  t.true(mask.paste('1234 1234 1234 1234'), 'Pasted value can contain static parts')
+  t.equal(mask.getValue(), '1234 1234 1234 1234', 'Value after paste')
+})
+
+test('Pasting with insertMode', function(t) {
+  t.plan(7)
+
+  var mask = new InputMask({
+    pattern: '1111 1111 1111 1111',
+    value: '1111222233334444',
+    insertMode: true
+  })
+
+  // Pasted input doesn't have to contain static formatting characters...
+  mask.selection = {start: 5, end: 5}
+  t.true(mask.paste('5555'), 'Complete, valid input accepted')
+  t.equal(mask.getValue(), '1111 5555 2222 3333', 'Formatted pasted value')
+  t.deepEqual(mask.selection, {start: 10, end: 10}, 'Cursor position after paste')
+
+  mask.selection = {start: 8, end: 12}
+  t.true(mask.paste('6666'), 'Complete, valid input accepted')
+  t.equal(mask.getValue(), '1111 5556 6662 2333', 'Formatted pasted value')
+
+  // Pasted input can contain static formatting characters
+  mask.selection = {start: 0, end: 0}
   t.true(mask.paste('1234 1234 1234 1234'), 'Pasted value can contain static parts')
   t.equal(mask.getValue(), '1234 1234 1234 1234', 'Value after paste')
 })

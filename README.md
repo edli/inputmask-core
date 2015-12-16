@@ -187,6 +187,12 @@ Set to true if you do not want to see placeholders.
 
 Defaults to `false`.
 
+### `insertMode` :  `boolean`
+
+Set to true if you do not want replace on input.
+
+Defaults to `false`.
+
 ## `InputMask` editing methods
 
 Editing methods will not allow the string being edited to contain invalid values according to the mask's pattern.
